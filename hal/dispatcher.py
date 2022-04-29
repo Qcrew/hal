@@ -7,7 +7,7 @@ import notion_client as notion
 from hal.logger import logger
 
 # token.txt must be present at this path with two comma separated values: token, url
-TOKENPATH = Path(__file__).resolve().parent / "token.txt"
+TOKENPATH = Path.cwd() / "token.txt"
 
 
 class LogDispatcher:
@@ -28,6 +28,7 @@ class LogDispatcher:
         # first, we update the dispatch timestamp
         count = 1  # 1st block is a divider, so we start our indexing count from 1
         self._post(text=f"Updated on {timestamp}", kind="heading_3", index=count)
+        logger.debug(f"Updated {timestamp = }")
 
         # for this to work, the Notion page structure must be setup to match the content
         for datadict in content:
@@ -36,8 +37,8 @@ class LogDispatcher:
             data_timestamp = f"Timestamp: {datadict.pop('Timestamp')}"
             for param, value in datadict.items():
                 count += 1
-                logger.debug(f"Updating {param}: {value}")
                 self._post(text=f"{param}: {value}", kind="heading_2", index=count)
+                logger.debug(f"Updating {param}: {value}")
             count += 1
             self._post(text=data_timestamp, kind="paragraph", index=count)
 

@@ -9,33 +9,38 @@ from hal.logger import logger
 from hal.reader import LogManager
 
 LOG_FOLDER_PATH = Path("C:/Users/Qcrew4/Bluefors logs")
-UPDATE_INTERVAL = 150  # in seconds
+UPDATE_INTERVAL = 60  # in seconds
 
 
 @logger.catch
 def main():
     """ """
-    old_date = datetime.now().strftime("%y-%m-%d")
-    logger.debug(f"Entering HAL's main loop on '{old_date}'...")
+    try:
+        old_date = datetime.now().strftime("%y-%m-%d")
+        logger.debug(f"Entering HAL's main loop on '{old_date}'...")
 
-    manager = LogManager(LOG_FOLDER_PATH / old_date)
-    dispatcher = LogDispatcher()
+        manager = LogManager(LOG_FOLDER_PATH / old_date)
+        dispatcher = LogDispatcher()
 
-    while True:
-        new_date = datetime.now().strftime("%y-%m-%d")
+        while True:
+            new_date = datetime.now().strftime("%y-%m-%d")
 
-        if old_date != new_date:  # account for Bluefors' log rotation
-            subfolder = LOG_FOLDER_PATH / new_date
-            if subfolder.exists():  # assume logs are created together with subfolder
-                logger.debug(f"Rerouting log manager to new {subfolder = }...")
-                manager = LogManager(subfolder)  # update log manager
-                old_date = new_date
+            if old_date != new_date:  # account for Bluefors' log rotation
+                subfolder = LOG_FOLDER_PATH / new_date
+                if subfolder.exists():  # assume logfiles are created with the subfolder
+                    logger.debug(f"Rerouting log manager to new {subfolder = }...")
+                    manager = LogManager(subfolder)  # update log manager
+                    old_date = new_date
 
-        data = manager.data  # get data
-        timestamp = datetime.now().strftime("%d %b %Y %I:%M:%S %p")
-        logger.debug(f"Dispatched data with {timestamp = }.")
-        dispatcher.post(timestamp, data)
-        time.sleep(UPDATE_INTERVAL)
+            data = manager.data  # get data
+            timestamp = datetime.now().strftime("%d %b %Y %I:%M:%S %p")
+            logger.debug(f"Dispatching data with {timestamp = }...")
+            dispatcher.post(timestamp, data)
+            logger.debug(f"Sleeping for {UPDATE_INTERVAL}s till next update...")
+            time.sleep(UPDATE_INTERVAL)
+    except KeyboardInterrupt:
+        logger.debug("Exited after detecting keyboard interrupt!")
+
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import notion_client as notion
 
-from logger import logger
+from hal.logger import logger
 
 # token.txt must be present at this path with two comma separated values: token, url
 TOKENPATH = Path(__file__).resolve().parent / "token.txt"

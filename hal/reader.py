@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from logger import logger
+from hal.logger import logger
 
 """ logspec is a dict that maps the log file names (only the prefix, excluding the date suffix) to the names of the parameters logged in them. the tuples below have been constructed after inspecting the log files. the params are displayed on the notion in the same order, so the notion page structure must be set accordingly. """
 LOGSPEC = {

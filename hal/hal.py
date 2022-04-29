@@ -4,9 +4,9 @@ from datetime import datetime
 from pathlib import Path
 import time
 
-from dispatcher import LogDispatcher
-from logger import logger
-from reader import LogManager
+from hal.dispatcher import LogDispatcher
+from hal.logger import logger
+from hal.reader import LogManager
 
 LOG_FOLDER_PATH = Path("C:/Users/Qcrew4/Bluefors logs")
 UPDATE_INTERVAL = 150  # in seconds

@@ -10,6 +10,9 @@ package_data = \
 install_requires = \
 ['loguru>=0.6.0,<0.7.0', 'notion-client>=1.0.0,<2.0.0']
 
+entry_points = \
+{'console_scripts': ['hal = hal.hal:main']}
+
 setup_kwargs = {
     'name': 'hal',
     'version': '2.0.0',
@@ -23,6 +26,7 @@ setup_kwargs = {
     'packages': packages,
     'package_data': package_data,
     'install_requires': install_requires,
+    'entry_points': entry_points,
     'python_requires': '>=3.10,<4.0',
 }
 

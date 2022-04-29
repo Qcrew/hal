@@ -38,7 +38,4 @@ def main():
         time.sleep(UPDATE_INTERVAL)
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        pass
+    main()

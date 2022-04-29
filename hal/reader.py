@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from hal.logger import logger
+from logger import logger
 
 """ logspec is a dict that maps the log file names (only the prefix, excluding the date suffix) to the names of the parameters logged in them. the tuples below have been constructed after inspecting the log files. """
 LOGSPEC = {
@@ -75,7 +75,7 @@ class LogManager:
             name = file.stem[:-PADDING]
             if name in LOGSPEC.keys():  # we want to log the data in this file
                 readers[name] = LogReader(file, *LOGSPEC[name])
-                logger.debug(f"Prepared to log data from '{file.stem}'!")
+                logger.debug(f"Prepared to log data from '{file.name}'!")
         self._readers = readers
 
     @property
@@ -85,6 +85,7 @@ class LogManager:
         for name, reader in self._readers.items():
             data[name] = reader.data
         return data
+
 
 class LogReader:
     """A generic log reader that reads the last line from a given log file, splits the line with a given delimiter, and maps each value to a corresponding key from a given tuple of keys. Values in the log file can be ignored by setting their corresponding key = None."""

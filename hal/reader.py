@@ -4,54 +4,75 @@ from pathlib import Path
 
 from logger import logger
 
-""" logspec is a dict that maps the log file names (only the prefix, excluding the date suffix) to the names of the parameters logged in them. the tuples below have been constructed after inspecting the log files. """
+""" logspec is a dict that maps the log file names (only the prefix, excluding the date suffix) to the names of the parameters logged in them. the tuples below have been constructed after inspecting the log files. the params are displayed on the notion in the same order, so the notion page structure must be set accordingly. """
 LOGSPEC = {
-    "CH1 T": ("Date", "Time", "50K flange [K]"),
-    "CH2 T": ("Date", "Time", "4K flange [K]"),
-    "CH5 T": ("Date", "Time", "Still flange [K]"),
-    "CH6 T": ("Date", "Time", "MXC flange [K]"),
-    "Heaters": ("Date", "Time", "MXC heater [W]", "Still heater [W]"),
-    "Flowmeter": ("Date", "Time", "Mix flow [mmol/s]"),
+    "CH6 T": ("Date", "Time", "MXC flange"),
+    "CH5 T": ("Date", "Time", "Still flange"),
+    "CH2 T": ("Date", "Time", "4K flange"),
+    "CH1 T": ("Date", "Time", "50K flange"),
     "maxigauge": (
         "Date",
         "Time",
         *(None,) * 3,
-        "P1 OVC [mbar]",
+        "P1 OVC",
         *(None,) * 5,
-        "P2 still [mbar]",
+        "P2 still",
         *(None,) * 5,
-        "P3 cond [mbar]",
+        "P3 cond",
         *(None,) * 5,
-        "P4 cond [mbar]",
+        "P4 cond",
         *(None,) * 5,
-        "P5 tank [mbar]",
+        "P5 tank",
         *(None,) * 5,
-        "P6 service [mbar]",
+        "P6 service",
         *(None,) * 3,
     ),
+    "Flowmeter": ("Date", "Time", "Mix flow"),
+    "Heaters": ("Date", "Time", "MXC heater", "Still heater"),
     "Status": (
         "Date",
         "Time",
         *(None,) * 25,
-        "Water temp in [°C]",
+        "Water temp in",
         None,
-        "Water temp out [°C]",
+        "Water temp out",
         None,
-        "Oil temp [°C]",
+        "Oil temp",
         None,
-        "Helium temp [°C]",
+        "Helium temp",
         *(None,) * 3,
-        "Helium pres low [psi]",
+        "Helium pres low",
         *(None,) * 3,
-        "Helium pres high [psi]",
+        "Helium pres high",
         *(None,) * 3,
-        "Comp current [A]",
+        "Comp current",
         *(None,) * 30,
     ),
 }
 
-""" Ignore the last <PADDING> characters of each log file - these characters are a space followed by a date string 'yy-mm-dd' i.e. 9 characters in all. The logspec keys are the other characters in the log file name they except these last 9"""
-PADDING = 9
+""" How each param will be parsed """
+PARSESPEC = {
+    "MXC flange": lambda v: f"{float(v) * 1e3:.2e} mK",
+    "Still flange": lambda v: f"{float(v):.2e} K",
+    "4K flange": lambda v: f"{round(float(v), 2)} K",
+    "50K flange": lambda v: f"{round(float(v), 2)} K",
+    "P1 OVC": lambda v: f"{float(v):.2e} mbar",
+    "P2 still": lambda v: f"{float(v):.2e} mbar",
+    "P3 cond": lambda v: f"{float(v):.2e} mbar",
+    "P4 cond": lambda v: f"{float(v):.2e} mbar",
+    "P5 tank": lambda v: f"{float(v):.2e} mbar",
+    "P6 service": lambda v: f"{float(v):.2e} mbar",
+    "Mix flow": lambda v: f"{float(v):.2} mmol/s",
+    "MXC heater": lambda v: f"{float(v) * 1e6:.2e} μW",
+    "Still heater": lambda v: f"{float(v) * 1e3:.2e} mW",
+    "Water temp in": lambda v: f"{round(float(v), 2)} °C",
+    "Water temp out": lambda v: f"{round(float(v), 2)} °C",
+    "Oil temp": lambda v: f"{round(float(v), 2)} °C",
+    "Helium temp": lambda v: f"{round(float(v), 2)} °C",
+    "Helium pres low": lambda v: f"{float(v):.2} psi",
+    "Helium pres high": lambda v: f"{float(v):.2} psi",
+    "Comp current": lambda v: f"{round(float(v), 2)} A",
+}
 
 
 class LogManager:
@@ -61,30 +82,40 @@ class LogManager:
         """path: (Path) path to folder containing log files"""
         logger.debug(f"Initializing a log manager at {path = }...")
 
-        self._path = path
-        self._logfiles = [file for file in path.iterdir() if file.suffix == ".log"]
-        logger.debug(f"Found logfiles: {[str(file) for file in self._logfiles]}.")
+        self._readers: dict[str, LogReader] = {}
 
-        self._readers = None
-        self._initialize_readers()
+        logfiles = [file for file in path.iterdir() if file.suffix == ".log"]
+        for key in LOGSPEC.keys():  # we want to follow LOGSPEC key order
+            for file in logfiles:
+                if key in file.stem:  # we want to log the data in this file
+                    self._readers[key] = LogReader(file, *LOGSPEC[key])
+                    logger.debug(f"Prepared to log data from '{file.name}'!")
 
-    def _initialize_readers(self) -> None:
-        """ """
-        readers: dict[str, LogReader] = {}
-        for file in self._logfiles:
-            name = file.stem[:-PADDING]
-            if name in LOGSPEC.keys():  # we want to log the data in this file
-                readers[name] = LogReader(file, *LOGSPEC[name])
-                logger.debug(f"Prepared to log data from '{file.name}'!")
-        self._readers = readers
+        self._parser = LogParser()
 
     @property
-    def data(self) -> dict[str, str]:
-        """return dict of dicts"""
-        data = {}
-        for name, reader in self._readers.items():
-            data[name] = reader.data
-        return data
+    def data(self):
+        """return list of dicts"""
+        data = {name: reader.data for name, reader in self._readers.items()}
+        return self._parser.parse(data)
+
+
+class LogParser:
+    """ """
+
+    def parse(self, data: dict[str, dict[str, str]]) -> list[dict[str, str]]:
+        """ """
+        pdata = {}  # p means parsed
+        for key, names in LOGSPEC.items():
+            if key in data.keys():
+                # guaranteed that each data dict contains two keys "Date" and "Time"
+                date, time = data[key].pop("Date"), data[key].pop("Time")
+                pdata[key] = {k: PARSESPEC[k](v) for k, v in data[key].items()}
+                pdata[key]["Timestamp"] = f"{date} {time}"
+            else:
+                pdata[key] = {k: "N/A" for k in names if k not in ("Date", "Time")}
+                pdata[key]["Timestamp"] = "N/A"
+        return list(pdata.values())
 
 
 class LogReader:

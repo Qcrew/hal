@@ -23,25 +23,21 @@ class LogDispatcher:
 
         logger.debug(f"Log dispatcher ready to post to Notion page = {url}.")
 
-    def post(self, timestamp: str, content: dict[str, dict[str, str]]) -> None:
+    def post(self, timestamp: str, content: list[dict[str, str]]) -> None:
         """indexing follows block order set on Notion page"""
-        # TODO the count updating is a little loose, need to devise a better strategy
-        count = 1  # 1st block is a divider, so we start our count from 1
+        # first, we update the dispatch timestamp
+        count = 1  # 1st block is a divider, so we start our indexing count from 1
+        self._post(text=f"Updated on {timestamp}", kind="heading_3", index=count)
 
-        self._post(text=f"Updated on {timestamp}", kind="heading_2", index=count)
-
-        for data in content.values():
+        # for this to work, the Notion page structure must be setup to match the content
+        for datadict in content:
             count += 1  # account for the divider in between
-
-            # guaranteed that each data dict contains two keys "Date" and "Time"
-            date, time = data.pop("Date"), data.pop("Time")
-            data_timestamp = f"Timestamp: {date} {time}"
-
-            # params must be present on the Notion page in data dict insertion order
-            for param, value in data.items():
+            # Timestamp key is guaranteed to exist
+            data_timestamp = f"Timestamp: {datadict.pop('Timestamp')}"
+            for param, value in datadict.items():
                 count += 1
-                self._post(text=f"{param}: {value}", kind="heading_1", index=count)
-
+                logger.debug(f"Updating {param}: {value}")
+                self._post(text=f"{param}: {value}", kind="heading_2", index=count)
             count += 1
             self._post(text=data_timestamp, kind="paragraph", index=count)
 
@@ -49,7 +45,6 @@ class LogDispatcher:
 
     def _post(self, text, kind, index):
         """internal method to post a no-frills simple block with the given text and kind (type) and block_id given by index"""
-        # only works if Notion page structure remains unchanged
         block = {
             "type": kind,
             kind: {

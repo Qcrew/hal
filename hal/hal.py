@@ -9,15 +9,15 @@ from logger import logger
 from reader import LogManager
 
 LOG_FOLDER_PATH = Path("C:/Users/Qcrew4/Bluefors logs")
-UPDATE_INTERVAL = 60  # in seconds
+UPDATE_INTERVAL = 150  # in seconds
 
 
 @logger.catch
 def main():
     """ """
+    old_date = datetime.now().strftime("%y-%m-%d")
     logger.debug(f"Entering HAL's main loop on '{old_date}'...")
 
-    old_date = datetime.now().strftime("%y-%m-%d")
     manager = LogManager(LOG_FOLDER_PATH / old_date)
     dispatcher = LogDispatcher()
 

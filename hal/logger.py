@@ -7,8 +7,6 @@ from loguru import logger
 # set logs folder path
 LOGSPATH = Path.cwd() / "logs"
 
-logger.remove()  # remove default handlers
-
 # register log sinks with loguru logger
 logger.add(
     LOGSPATH / "log_{time}.log",

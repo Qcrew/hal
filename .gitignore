@@ -52,3 +52,6 @@ logs/
 
 # API tokens
 token.txt
+
+# batch scripts
+*.bat

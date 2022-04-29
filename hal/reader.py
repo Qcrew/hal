@@ -62,7 +62,7 @@ PARSESPEC = {
     "P4 cond": lambda v: f"{float(v):.2e} mbar",
     "P5 tank": lambda v: f"{float(v):.2e} mbar",
     "P6 service": lambda v: f"{float(v):.2e} mbar",
-    "Mix flow": lambda v: f"{float(v):.2} mmol/s",
+    "Mix flow": lambda v: f"{round(float(v), 2)} mmol/s",
     "MXC heater": lambda v: f"{float(v) * 1e6:.2e} μW",
     "Still heater": lambda v: f"{float(v) * 1e3:.2e} mW",
     "Water temp in": lambda v: f"{round(float(v), 2)} °C",

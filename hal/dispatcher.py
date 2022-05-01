@@ -1,13 +1,17 @@
 """ This module contains helpers that dispatch data via Notion's api. """
 
 from pathlib import Path
+import time
 
 import notion_client as notion
 
 from hal.logger import logger
 
-# token.txt must be present at this path with two comma separated values: token, url
-TOKENPATH = Path.cwd().parent / "token.txt"
+# token.txt must be at this path and contain one value - HAL's Notion integration token
+TOKENPATH = Path.cwd() / "token.txt"
+
+# if we encounter an HTTP response error, wait before trying to post again
+RETRY_TIME = 90  # seconds
 
 
 class LogDispatcher:
@@ -15,13 +19,30 @@ class LogDispatcher:
 
     def __init__(self) -> None:
         """ """
-        with TOKENPATH.open() as tokenfile:
-            token, url = tokenfile.read().split(",")
-        self._client = notion.Client(auth=token)
-        self._pageid = notion.helpers.get_id(url)
-        self._page_data = self._client.blocks.children.list(block_id=self._pageid)
+        self._client = notion.Client(auth=self._get_token())
 
-        logger.debug(f"Log dispatcher ready to post to Notion page = {url}.")
+        try:
+            self._pageid = self._client.search()["results"][0]["id"]
+            self._page_data = self._client.blocks.children.list(block_id=self._pageid)
+        except notion.APIResponseError as error:
+            if error.code == notion.APIErrorCode.Unauthorized:
+                logger.error(f"Token found in {TOKENPATH} is invalid.")
+            raise
+
+        logger.debug(f"Log dispatcher ready to post to Notion page = {self._pageid}.")
+
+    def _get_token(self) -> str:
+        """ """
+        try:
+            with TOKENPATH.open() as tokenfile:
+                return tokenfile.read()
+        except FileNotFoundError:
+            message = (
+                f"Please create a file named 'token.txt' containing a single string "
+                f"which is Hal's Notion integration token at {TOKENPATH.parent}."
+            )
+            logger.error(message)
+            raise
 
     def post(self, timestamp: str, content: list[dict[str, str]]) -> None:
         """indexing follows block order set on Notion page"""
@@ -54,4 +75,16 @@ class LogDispatcher:
             },
         }
         block_id = self._page_data["results"][index]["id"]
-        self._client.blocks.update(block_id=block_id, **block)
+
+        try:
+            self._client.blocks.update(block_id=block_id, **block)
+        except notion.errors.HTTPResponseError as error:
+            if error.status == 502:
+                # this error seems to be temporary and can be responded to by waiting
+                # for REFRESH_INTERVAL before trying to post again
+                message = f"Got 502 error, re-sending update after {RETRY_TIME}s..."
+                logger.warning(message)
+                time.sleep(RETRY_TIME)
+                self._post(text, kind, index)
+            else:
+                raise

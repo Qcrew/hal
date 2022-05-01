@@ -11,15 +11,8 @@ from hal.reader import LogManager
 
 
 @logger.catch
-def main():
+def run(path: Path, interval: int):
     """path: log folder path, interval: how often data will be read and posted by HAL"""
-
-    parser = argparse.ArgumentParser(description="Run HAL")
-    parser.add_argument("path", type=Path, help="Path to the main logs folder")
-    parser.add_argument("interval", type=int, help="How often data will be updated (s)")
-    args = parser.parse_args()
-
-    path, interval = args.path, args.interval
 
     try:
         old_date = datetime.now().strftime("%y-%m-%d")
@@ -49,4 +42,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    """ """
+    parser = argparse.ArgumentParser(description="Run HAL")
+    parser.add_argument("path", type=Path, help="Path to the main logs folder")
+    parser.add_argument("interval", type=int, help="How often data will be updated (s)")
+    args = parser.parse_args()
+
+    run(args.path, args.interval)

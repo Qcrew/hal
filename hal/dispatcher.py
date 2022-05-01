@@ -7,7 +7,7 @@ import notion_client as notion
 from hal.logger import logger
 
 # token.txt must be present at this path with two comma separated values: token, url
-TOKENPATH = Path.cwd() / "token.txt"
+TOKENPATH = Path.cwd().parent / "token.txt"
 
 
 class LogDispatcher:

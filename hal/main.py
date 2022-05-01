@@ -41,11 +41,16 @@ def run(path: Path, interval: int):
         logger.debug("Exited after detecting keyboard interrupt!")
 
 
-if __name__ == "__main__":
-    """ """
+def main():
+    """ method made for CLI usage """
     parser = argparse.ArgumentParser(description="Run HAL")
     parser.add_argument("path", type=Path, help="Path to the main logs folder")
     parser.add_argument("interval", type=int, help="How often data will be updated (s)")
     args = parser.parse_args()
 
     run(args.path, args.interval)
+
+
+if __name__ == "__main__":
+    """ """
+    main()

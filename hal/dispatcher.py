@@ -3,6 +3,7 @@
 from pathlib import Path
 import time
 
+import httpx
 import notion_client as notion
 
 from hal.logger import logger
@@ -11,7 +12,7 @@ from hal.logger import logger
 TOKENPATH = Path.cwd() / "token.txt"
 
 # if we encounter an HTTP response error, wait before trying to post again
-RETRY_TIME = 90  # seconds
+RETRY_TIME = 60  # seconds
 
 
 class LogDispatcher:
@@ -59,7 +60,7 @@ class LogDispatcher:
             for param, value in datadict.items():
                 count += 1
                 self._post(text=f"{param}: {value}", kind="heading_2", index=count)
-                logger.debug(f"Updating {param}: {value}")
+                logger.debug(f"Updated {param}: {value}.")
             count += 1
             self._post(text=data_timestamp, kind="paragraph", index=count)
 
@@ -79,12 +80,19 @@ class LogDispatcher:
         try:
             self._client.blocks.update(block_id=block_id, **block)
         except notion.errors.HTTPResponseError as error:
-            if error.status == 502:
-                # this error seems to be temporary and can be responded to by waiting
-                # for REFRESH_INTERVAL before trying to post again
-                message = f"Got 502 error, re-sending update after {RETRY_TIME}s..."
-                logger.warning(message)
-                time.sleep(RETRY_TIME)
-                self._post(text, kind, index)
-            else:
-                raise
+            # the 502 error seems to be temporary and can be responded to by waiting
+            # for REFRESH_INTERVAL before trying to post again
+            message = f"Got {error = }, re-sending update after {RETRY_TIME}s..."
+            logger.warning(message)
+            time.sleep(RETRY_TIME)
+            self._post(text, kind, index)
+        except httpx.ConnectError as error:
+            # we can handle this by re-initializing the client, waiting, and re-posting
+            message = (
+                f"Got {error = }, re-starting client and re-sending update "
+                f"after {RETRY_TIME}s..."
+            )
+            logger.warning(message)
+            self._client = notion.Client(auth=self._get_token())
+            time.sleep(RETRY_TIME)
+            self._post(text, kind, index)

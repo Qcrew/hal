@@ -98,6 +98,15 @@ P6_SERVICE_PRES = Param(
 
 # cooling water
 
+WATER_FLOW = Param(
+    name="Water flow",
+    filename="ESP32 ",
+    pos=2,
+    nvals=NVALS,
+    units="L/min",
+    ndp=0,
+)
+
 WATER_IN_TEMP = Param(
     name="Water in",
     filename="Status_",
@@ -208,6 +217,7 @@ CONFIG = [
     P4_COND_PRES,
     P5_TANK_PRES,
     P6_SERVICE_PRES,
+    WATER_FLOW,
     WATER_IN_TEMP,
     WATER_OUT_TEMP,
     OIL_TEMP,

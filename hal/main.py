@@ -1,13 +1,13 @@
 """ This module coordinates interactions between the log readers (backend) and the Notion client (frontend). This is the main script used to run Hal, built for invoking via CLI. """
 
 import argparse
-from datetime import datetime
 from pathlib import Path
 import time
 
+from hal.config import CONFIG
 from hal.dispatcher import LogDispatcher
 from hal.logger import logger
-from hal.reader import LogManager
+from hal.reader import LogReader
 
 
 @logger.catch
@@ -15,26 +15,15 @@ def run(path: Path, interval: int):
     """path: log folder path, interval: how often data will be read and posted by HAL"""
 
     try:
-        old_date = datetime.now().strftime("%y-%m-%d")
-        logger.debug(f"Entering HAL's main loop on '{old_date}'...")
+        logger.debug(f"Entering HAL's main loop...")
 
-        manager = LogManager(path / old_date)
-        dispatcher = LogDispatcher()
+        reader = LogReader(path, *CONFIG)
+        dispatcher = LogDispatcher(interval)
 
         while True:
-            new_date = datetime.now().strftime("%y-%m-%d")
-
-            if old_date != new_date:  # account for Bluefors' log rotation
-                subfolder = path / new_date
-                if subfolder.exists():  # assume logfiles are created with the subfolder
-                    logger.debug(f"Rerouting log manager to new {subfolder = }...")
-                    manager = LogManager(subfolder)  # update log manager
-                    old_date = new_date
-
-            data = manager.data  # get data
-            timestamp = datetime.now().strftime("%d %b %Y %I:%M:%S %p")
-            logger.debug(f"Dispatching data with {timestamp = }...")
-            dispatcher.post(timestamp, data)
+            data = reader.read()
+            logger.debug(f"Dispatching data...")
+            dispatcher.post(data)
             logger.debug(f"Sleeping for {interval}s till next update...")
             time.sleep(interval)
     except KeyboardInterrupt:

@@ -16,10 +16,10 @@ BAUDRATE = 9600
 LOGPATH = Path("C:/Users/Qcrew4/Bluefors logs")
 FILEPREFIX = "ESP32 "
 
-
+@logger.catch
 def main():
     """ """
-    board = serial.Serial(port=PORT, baudrate=BAUDRATE)
+    board = serial.Serial(port=PORT, baudrate=BAUDRATE, timeout=90)
     logger.debug(f"Connected to {board = }.")
     old_date = get_datetime("%y-%m-%d")
     filepath = get_filepath(old_date)

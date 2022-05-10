@@ -10,13 +10,14 @@ install_requires = [
     "loguru>=0.6.0,<0.7.0",
     "notion-client>=1.0.0,<2.0.0",
     "numpy>=1.22.3,<2.0.0",
+    "pyserial>=3.5,<4.0",
 ]
 
 entry_points = {"console_scripts": ["hal = hal.main:main"]}
 
 setup_kwargs = {
     "name": "hal",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Monitor lab instruments in real-time with a Notion frontend",
     "long_description": None,
     "author": "qcrew",

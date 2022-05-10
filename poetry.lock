@@ -277,6 +277,17 @@ python-versions = ">=3.6.8"
 diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
+name = "pyserial"
+version = "3.5"
+description = "Python Serial Port Extension"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+cp2110 = ["hidapi"]
+
+[[package]]
 name = "pytest"
 version = "7.1.2"
 description = "pytest: simple powerful testing with Python"
@@ -341,7 +352,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "365e73c081a9b69fb98a6fdd96610458db6b398be50cfb28d7058cf329bb38b5"
+content-hash = "eeb66388c1aaeb2fbcb4c5b917f394355f4f99777ff2d56360414e2f00352e07"
 
 [metadata.files]
 anyio = [
@@ -477,6 +488,10 @@ py = [
 pyparsing = [
     {file = "pyparsing-3.0.8-py3-none-any.whl", hash = "sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06"},
     {file = "pyparsing-3.0.8.tar.gz", hash = "sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954"},
+]
+pyserial = [
+    {file = "pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0"},
+    {file = "pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb"},
 ]
 pytest = [
     {file = "pytest-7.1.2-py3-none-any.whl", hash = "sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c"},

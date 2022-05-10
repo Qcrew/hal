@@ -96,6 +96,15 @@ P6_SERVICE_PRES = Param(
     units="mbar",
 )
 
+# compressed air pressure
+AIR_PRES = Param(
+    name="Air pres",
+    filename="ESP32 ",
+    pos=3,
+    nvals=NVALS,
+    units="bar",
+)
+
 # cooling water
 
 WATER_FLOW = Param(
@@ -217,6 +226,7 @@ CONFIG = [
     P4_COND_PRES,
     P5_TANK_PRES,
     P6_SERVICE_PRES,
+    AIR_PRES,
     WATER_FLOW,
     WATER_IN_TEMP,
     WATER_OUT_TEMP,

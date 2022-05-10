@@ -1,11 +1,13 @@
 """
-Script to read sensor data from the ESP32 board and save it to a log file on disk. Currently, we are sensing cooling water flow only.
+Script to read sensor data from the ESP32 board and save it to a log file on disk. Currently, we are sensing cooling water flow and compressed air pressure.
 This script is meant to be always running in the background.
+Logformat: <dd-mm-yy>,<hh-mm-ss>,<water flow in L/min>,<compressed air pressure in bar>
 """
 
 from datetime import datetime
 from pathlib import Path
 import time
+from tkinter import E
 
 from loguru import logger
 import serial
@@ -50,9 +52,17 @@ def main():
                     datestamp = get_datetime("%d-%m-%y")
                     timestamp = get_datetime("%H:%M:%S")
                     value = data.decode(encoding="utf-8", errors="ignore").strip()
-                    content = f"{datestamp},{timestamp},{value}\n"
-                    log.write(content)
-                    logger.debug(f"Received and wrote {content = } to logfile.")
+
+                    try:  # do a sanity check on the received value string
+                        values = value.split(",")
+                        flow, pres = int(values[0]), float(values[1])
+                    except (ValueError, IndexError):
+                        logger.warning(f"Received bad {values = } and ignored them.")
+                    else:
+                        content = f"{datestamp},{timestamp},{flow},{pres}\n"
+                        log.write(content)
+                        logger.debug(f"Received and wrote {content = } to logfile.")
+
     except KeyboardInterrupt:
         logger.debug("Exited after detecting keyboard interrupt!")
 

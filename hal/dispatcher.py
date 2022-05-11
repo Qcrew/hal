@@ -93,7 +93,7 @@ class LogDispatcher:
                     [{"type": "text", "text": {"content": name}}],
                     [{"type": "text", "text": {"content": value}}],
                 ]
-            }
+            },
         }
         block_id = self._table_data["results"][index]["id"]
         self._post(block_id, **block)
@@ -103,8 +103,11 @@ class LogDispatcher:
         """ """
         try:
             self._client.blocks.update(block_id=block_id, **block)
-        except notion.errors.HTTPResponseError as error:
-            # this error class is temporary so we respond by waiting and re-trying
+        except (
+            notion.errors.HTTPResponseError,
+            notion.errors.RequestTimeoutError,
+        ) as error:
+            # these errors are temporary so we respond by waiting and re-trying
             message = f"Got {error = }, re-sending data after {self.interval}s..."
             logger.warning(message)
             time.sleep(self.interval)

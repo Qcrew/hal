@@ -8,6 +8,7 @@ from hal.config import CONFIG
 from hal.dispatcher import LogDispatcher
 from hal.logger import logger
 from hal.reader import LogReader
+from hal.siren import Siren
 
 
 @logger.catch
@@ -19,11 +20,12 @@ def run(path: Path, interval: int):
 
         reader = LogReader(path, *CONFIG)
         dispatcher = LogDispatcher(interval)
+        siren = Siren()
 
         while True:
             data = reader.read()
             logger.debug(f"Dispatching data...")
-            dispatcher.post(data)
+            dispatcher.post(data, siren)
             logger.debug(f"Sleeping for {interval}s till next update...")
             time.sleep(interval)
     except KeyboardInterrupt:

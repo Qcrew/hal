@@ -11,8 +11,8 @@ import notion_client as notion
 from hal.logger import logger
 from hal.param import Param
 
-# token.txt must be at this path and contain one value - HAL's Notion integration token
-TOKENPATH = Path.cwd() / "token.txt"
+# a txt file must be at this path and contain one value - HAL's Notion integration token
+TOKENPATH = Path.cwd() / "notion_token.txt"
 
 
 class LogDispatcher:
@@ -49,13 +49,13 @@ class LogDispatcher:
                 return tokenfile.read()
         except FileNotFoundError:
             message = (
-                f"Please create a file named 'token.txt' containing a single string "
+                f"Please create a file named 'notion_token.txt' having a single string "
                 f"which is Hal's Notion integration token at {TOKENPATH.parent}."
             )
             logger.error(message)
             raise
 
-    def post(self, data: dict[Param, tuple[np.ndarray, np.ndarray]]) -> None:
+    def post(self, data: dict[Param, tuple[np.ndarray, np.ndarray]], siren) -> None:
         """ """
         self._post_timestamp()  # first, we update the main timestamp
 
@@ -66,6 +66,8 @@ class LogDispatcher:
             else:
                 timestamp = timestamps[-1][:-3]  # ignore ss, only extract hh:mm
                 value = param.parse(values[-1])
+                if not param.validate(value):  # sound an alarm
+                    siren.alert(param, value)
                 self._post_table_row(timestamp, param.name, value, index)
 
         logger.debug(f"Posted data to Notion page.")

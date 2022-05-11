@@ -51,7 +51,8 @@ venv.bak/
 logs/
 
 # API tokens
-token.txt
+notion_token.txt
+slack_token.txt
 
 # batch scripts
 *.bat

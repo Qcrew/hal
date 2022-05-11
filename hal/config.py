@@ -103,6 +103,7 @@ AIR_PRES = Param(
     pos=3,
     nvals=NVALS,
     units="bar",
+    bounds=(3, 7),
 )
 
 # cooling water
@@ -114,6 +115,7 @@ WATER_FLOW = Param(
     nvals=NVALS,
     units="L/min",
     ndp=0,
+    bounds=(10, 25),
 )
 
 WATER_IN_TEMP = Param(
@@ -123,6 +125,7 @@ WATER_IN_TEMP = Param(
     nvals=NVALS,
     units="°C",
     ndp=1,
+    bounds=(13, 23),
 )
 
 WATER_OUT_TEMP = Param(
@@ -132,6 +135,7 @@ WATER_OUT_TEMP = Param(
     nvals=NVALS,
     units="°C",
     ndp=1,
+    bounds=(13, 33),
 )
 
 # compressor status

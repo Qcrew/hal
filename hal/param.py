@@ -20,6 +20,7 @@ class Param:
         ndp: int = 2,
         uformats: dict[str, range] = None,
         scinot: bool = False,
+        bounds: tuple[float, float] = None,
     ) -> None:
         """
         name (str) displayed name of this param
@@ -30,6 +31,7 @@ class Param:
         ndp (int) number of decimal places to round the value(s) to, default = 2.
         uformats (dict) additional unit formatting for the value to be displayed in human readable format. Key = units (string must be recognized by Pint) and value = range object, then the unit will be applied based on which range the order of magnitude of the value falls in.
         scinot (bool) whether or not to display the number in scientific notation
+        bounds (float, float) tuple (min, max) indicate the open interval of non-alarming values for this parameter
         """
         self.name = name
         self.filename = filename
@@ -39,6 +41,7 @@ class Param:
         self.ndp = ndp
         self.uformats = uformats
         self.scinot = scinot
+        self.bounds = bounds
 
     def __repr__(self) -> str:
         """ """
@@ -62,3 +65,11 @@ class Param:
             return f"{quantity:~.{self.ndp}e}"
         else:
             return f"{quantity:~.{self.ndp}f}"
+
+    def validate(self, value: str) -> bool:
+        """ check if value (str), which should be castable to float, is within bounds, if bounds have been defined
+        return bool indicating whether the value is valid or not
+        """
+        if self.bounds and not self.bounds[0] < float(value) < self.bounds[1]:
+            return False
+        return True

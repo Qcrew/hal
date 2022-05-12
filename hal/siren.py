@@ -49,7 +49,7 @@ class Siren:
         """ """
         text = f"{param.name} {value = } is out of bounds {param.bounds}"
 
-        timestamp = self.timestamps[param] if param in self.timestamps else time.time()
+        timestamp = self.timestamps[param] if param in self.timestamps else 0
         # post only if more than self.remind_time has passed since last message
         if int(time.time() - timestamp) > self.remind_time:
             try:
@@ -68,6 +68,6 @@ class Siren:
                     logger.debug(f"Didn't post '{text = }' due to {errorstring = }.")
         else:
             logger.debug(
-                f"Didn't post '{text = }' as {self.remind_time}s have not elapsed"
+                f"Didn't post '{text = }' as {self.remind_time}s have not elapsed "
                 f"since the previous post."
             )

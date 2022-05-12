@@ -103,7 +103,7 @@ AIR_PRES = Param(
     pos=3,
     nvals=NVALS,
     units="bar",
-    bounds=(3, 7),
+    bounds=(7, 10),
 )
 
 # cooling water

@@ -70,7 +70,7 @@ class Param:
         """check if value (str), which should be castable to float, is within bounds, if bounds have been defined
         return bool indicating whether the value is valid or not
         """
-        quantity = pint.Quantity(*value.split())
+        quantity = pint.Quantity(*value.split(maxsplit=1))
         magnitude = float(quantity.magnitude)
         if self.bounds and not self.bounds[0] < magnitude < self.bounds[1]:
             return False

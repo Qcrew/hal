@@ -65,9 +65,10 @@ class LogDispatcher:
                 self._post_table_row("N/A", param.name, "N/A", index)
             else:
                 timestamp = timestamps[-1][:-3]  # ignore ss, only extract hh:mm
+                value = values[-1]  # only post latest value to Notion page
                 if not param.validate(value):  # sound an alarm
                     siren.alert(param, value)
-                value = param.parse(values[-1])
+                value = param.parse(value)  # convert to appropriate magnitude and units
                 self._post_table_row(timestamp, param.name, value, index)
 
         logger.debug(f"Posted data to Notion page.")

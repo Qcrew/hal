@@ -67,9 +67,11 @@ class Param:
             return f"{quantity:~.{self.ndp}f}"
 
     def validate(self, value: str) -> bool:
-        """ check if value (str), which should be castable to float, is within bounds, if bounds have been defined
+        """check if value (str), which should be castable to float, is within bounds, if bounds have been defined
         return bool indicating whether the value is valid or not
         """
-        if self.bounds and not self.bounds[0] < float(value) < self.bounds[1]:
+        quantity = pint.Quantity(*value.split())
+        magnitude = float(quantity.magnitude)
+        if self.bounds and not self.bounds[0] < magnitude < self.bounds[1]:
             return False
         return True

@@ -11,6 +11,7 @@ install_requires = [
     "notion-client>=1.0.0,<2.0.0",
     "numpy>=1.22.3,<2.0.0",
     "pyserial>=3.5,<4.0",
+    "slack-bolt>=1.13.1,<2.0.0",
 ]
 
 entry_points = {"console_scripts": ["hal = hal.main:main"]}

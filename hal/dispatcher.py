@@ -65,6 +65,9 @@ class LogDispatcher:
                 self._post_table_row("N/A", param.name, "N/A", index)
             else:
                 timestamp = timestamps[-1][:-3]  # ignore ss, only extract hh:mm
+                if (timestamp is None) or (len(timestamp) <= 1):
+                    logger.debug(f"Discarded [{timestamps}, {param.name}, {values}].")
+                    continue
                 value = param.parse(values[-1])
                 if not param.validate(value):  # sound an alarm
                     siren.alert(param, value)

@@ -125,7 +125,7 @@ WATER_IN_TEMP = Param(
     nvals=NVALS,
     units="°C",
     ndp=1,
-    bounds=(13, 23),
+    bounds=(13, 25),
 )
 
 WATER_OUT_TEMP = Param(
@@ -135,7 +135,7 @@ WATER_OUT_TEMP = Param(
     nvals=NVALS,
     units="°C",
     ndp=1,
-    bounds=(13, 33),
+    bounds=(13, 37),
 )
 
 # compressor status

@@ -72,6 +72,7 @@ class LogReader:
                 except IndexError:  # when Bluefors log format is inconsistent
                     # we remove the last line of the logfile which is inconsistent
                     # we assume that no new line has been logged in the meantime
+                    logger.debug(f"Bad log format, removing last line of {path}...")
                     remove_last_line(path)
                     txt = self.loadtxt(path, cols)
 

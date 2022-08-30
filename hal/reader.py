@@ -3,6 +3,7 @@
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+import time
 
 import numpy as np
 
@@ -71,9 +72,15 @@ class LogReader:
                     txt = self.loadtxt(path, cols)
                 except IndexError:  # when Bluefors log format is inconsistent
                     # we remove the last line of the logfile which is inconsistent
+                    # after waiting for a time that is lower than the logging interval
                     # we assume that no new line has been logged in the meantime
-                    logger.debug(f"Bad log format, removing last line of {path}...")
+                    wait = 5
+                    logger.debug(
+                        f"Bad log format, removing last line of {path} after {wait}s..."
+                    )
+                    time.sleep(wait)
                     remove_last_line(path)
+                    time.sleep(wait)
                     txt = self.loadtxt(path, cols)
 
                 for idx, param in enumerate(params, start=1):

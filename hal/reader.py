@@ -49,17 +49,20 @@ class LogReader:
         date = self.date
         return self.path / f"{date}/{param.filename}{date}.log"
 
-    def read(self) -> dict[Param, tuple[np.ndarray, np.ndarray]]:
-        """
-        return dict[str, tuple[np.ndarray, np.ndarray]] with key = Param object and value = two 1D np arrays of strings, first array contains timestamps in mm-dd hh:mm format, second array contains raw param string values. length of each array equals the param's 'nvals' attribute. value is (None, None) if path doesn't exist.
-        assume col = 1 is for timestamp
-        """
-        # ensure correct logfiles are being read from
+    def _check_logfile_rotation(self) -> None:
+        """ """
         date = self.date  # get current date
         if date != self._date:  # account for Bluefors' log rotation
             self._logfiles = self.logfiles
             self._date = date
             logger.debug("Rotated log files!")
+
+    def read(self) -> dict[Param, tuple[np.ndarray, np.ndarray]]:
+        """
+        return dict[str, tuple[np.ndarray, np.ndarray]] with key = Param object and value = two 1D np arrays of strings, first array contains timestamps in mm-dd hh:mm format, second array contains raw param string values. length of each array equals the param's 'nvals' attribute. value is (None, None) if path doesn't exist.
+        assume col = 1 is for timestamp
+        """
+        self._check_logfile_rotation()  # ensure correct logfiles are being read from
 
         data = {}
         for path, params in self._logfiles.items():
@@ -68,20 +71,7 @@ class LogReader:
                     data[param] = (None, None)
             else:
                 cols = (1, *(p.pos for p in params))  # col=1 is for timestamp
-                try:
-                    txt = self.loadtxt(path, cols)
-                except IndexError:  # when Bluefors log format is inconsistent
-                    # we remove the last line of the logfile which is inconsistent
-                    # after waiting for a time that is lower than the logging interval
-                    # we assume that no new line has been logged in the meantime
-                    wait = 5
-                    logger.debug(
-                        f"Bad log format, removing last line of {path} after {wait}s..."
-                    )
-                    time.sleep(wait)
-                    remove_last_line(path)
-                    time.sleep(wait)
-                    txt = self.loadtxt(path, cols)
+                txt = self.loadtxt(path, cols)
 
                 for idx, param in enumerate(params, start=1):
                     timestamps = txt[0][-param.nvals :]
@@ -90,9 +80,18 @@ class LogReader:
 
         return data
 
-    def loadtxt(self, path, cols) -> np.ndarray:
+    def loadtxt(self, path, cols, wait=10) -> np.ndarray:
         """re-implementation of numpy's loadtxt method customised for LogReader"""
-        return np.loadtxt(path, dtype=str, delimiter=self.split, usecols=cols).T
+        try:
+            txt = np.loadtxt(path, dtype=str, delimiter=self.split, usecols=cols).T
+        except IndexError:  # when Bluefors log format is inconsistent
+            logger.debug(f"Bad log format, removing last line of {path}...")
+            time.sleep(wait)
+            remove_last_line(path)
+            time.sleep(wait)
+            self.loadtxt(path, cols)  # recursive call to handle multiple bad log lines
+        else:
+            return txt
 
 
 def remove_last_line(path) -> None:

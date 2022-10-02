@@ -115,7 +115,7 @@ WATER_FLOW = Param(
     nvals=NVALS,
     units="L/min",
     ndp=0,
-    bounds=(5, 20),
+    bounds=(5, 24),
 )
 
 WATER_IN_TEMP = Param(

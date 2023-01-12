@@ -4,71 +4,51 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-
-from hal.logger import logger
 from hal.param import Param
 
 
-class LogReader:
-    """reads a list of params from their log file"""
+class Reader:
+    """ """
 
-    def __init__(self, path: Path, *params: Param, split: str = ",") -> None:
+    def __init__(self, path: str, *params: Param) -> None:
         """
-        path (Path) path to the main logs folder
+        path (str) path to the main logs folder
         params (Param) a sequence of Params to be read from their log file
-        split: (str) string used to split the entries in each line of the log file
         """
-        self.path = path
-        self.params = params
-        self.split = split
-        self._date = self.date
-        self._logfiles = self.logfiles
-        logger.debug(f"Ready to read {len(params)} params from {path = }.")
+        self.path: Path = Path(path)
+        self.params: tuple[Param] = params
+        self.delimiter: str = ","
 
     @property
-    def date(self) -> str:
-        """ return current date string in yy:mm:dd format """
-        return datetime.now().strftime("%y-%m-%d")
+    def logspec(self) -> dict[Path, list[Param]]:
+        """return dict of logfile Paths mapped to a list of Params logged in them"""
+        # get current date in yy-mm-dd format e.g. 23-01-12
+        date = datetime.now().strftime("%y-%m-%d")
+        # get dict with key = Param and value = logfile Path
+        fpaths = {p: self.path / f"{date}/{p.filename}{date}.log" for p in self.params}
+        # return dict with key = logfile Path and value = list[Param]
+        logspec = defaultdict(list)
+        for param, filepath in fpaths.items():
+            logspec[filepath].append(param)
+        return logspec
 
-    @property
-    def logfiles(self) -> dict[Path, list[Param]]:
-        """ return dict of logfile Paths mapped to a list of Params logged in them """
-        logfiles = defaultdict(list)
-        filepaths = {param: self.locate(param) for param in self.params}
-        for param, filepath in filepaths.items():
-            logfiles[filepath].append(param)
-        return logfiles
-
-    def locate(self, param: Param) -> Path:
+    def read(self) -> dict[Param, dict[str, str]]:
         """
-        param (Param) the param to locate, based on its 'filename' attribute
-        return Path to log file generated based on Bluefors' log file naming convention
+        Read logfiles for all Params in config and return a data dictionary
+        Method is purposely written in a naive inefficient way to avoid reading inconsistently logged data
+        return dict with key = Param object, value = dict with key = timestamp string and value = param value string. number of entries in dictionary = param.nval and insertion order is reverse chronological. value is None if path to Param's logfile does not exist.
+        assume:
+            the second entry (index = 1) of each line in log file is the time stamp
+            the terminating character for each line is "/n" and delimiter is ","
         """
-        date = self.date
-        return self.path / f"{date}/{param.filename}{date}.log"
- 
-    def read(self) -> dict[Param, tuple[np.ndarray, np.ndarray]]:
-        """
-        return dict[str, tuple[np.ndarray, np.ndarray]] with key = Param object and value = two 1D np arrays of strings, first array contains timestamps in mm-dd hh:mm format, second array contains raw param string values. length of each array equals the param's 'nvals' attribute. value is (None, None) if path doesn't exist.
-        assume col = 1 is for timestamp
-        """
-        # ensure correct logfiles are being read from
-        date = self.date  # get current date
-        if date != self._date:  # account for Bluefors' log rotation
-            self._logfiles = self.logfiles
-            self._date = date
-            logger.debug("Rotated log files!")
-
-        data = {}
-        for path, params in self._logfiles.items():
-            if not path.exists():
-                for param in params:
-                    data[param] = (None, None)
-            else:
-                cols = (1, *(p.pos for p in params))  # col = 1 is for timestamp
-                txt = np.loadtxt(path, dtype=str, delimiter=self.split, usecols=cols).T
-                for idx, param in enumerate(params, start=1):
-                    timestamps, values = txt[0][-param.nvals:], txt[idx][-param.nvals :]
-                    data[param] = (timestamps, values)
+        data = {param: {} for param in self.params}
+        for path, params in self.logspec.items():
+            if path.exists():  # empty data dict if path does not exist
+                with path.open() as file:
+                    tokens = [line.rstrip("\n").split(",") for line in file.readlines()]
+                keys = [param.key for param in params if param.key]
+                for param in params:  # read 'nvals' latest tokens for each param
+                    for token in tokens[-param.nvals:][::-1]:
+                        if all(key in token for key in keys): # ignore bad tokens
+                            data[param][token[1]] = token[param.pos]  # token[1] = time
         return data

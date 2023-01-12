@@ -1,47 +1,39 @@
-""" This module coordinates interactions between the log readers (backend) and the Notion client (frontend). This is the main script used to run Hal, built for invoking via CLI. """
+""" Entry point to run HAL """
 
-import argparse
-from pathlib import Path
 import time
 
-from hal.config import CONFIG
-from hal.dispatcher import LogDispatcher
+from hal.config import PARAMS, INTERVAL, LOGFOLDER
+from hal.dispatcher import Dispatcher
 from hal.logger import logger
-from hal.reader import LogReader
+from hal.reader import Reader
 from hal.siren import Siren
 
 
 @logger.catch
-def run(path: Path, interval: int):
-    """path: log folder path, interval: how often data will be read and posted by HAL"""
+def main():
+    """
+    HAL's main loop.
+
+    Coordinates interaction between the reader, dispatcher, and the siren to read logfiles based on a user-specified config, post parameter values to Notion, and send alerts to a Slack channel.
+    """
+    logger.debug("Starting HAL...")
+    reader = Reader(LOGFOLDER, *PARAMS)
+    dispatcher = Dispatcher()
+    siren = Siren()
 
     try:
-        logger.debug(f"Entering HAL's main loop...")
-
-        reader = LogReader(path, *CONFIG)
-        dispatcher = LogDispatcher(interval)
-        siren = Siren()
-
         while True:
+            logger.debug("Reading and posting data...")
             data = reader.read()
-            logger.debug(f"Dispatching data...")
-            dispatcher.post(data, siren)
-            logger.debug(f"Sleeping for {interval}s till next update...")
-            time.sleep(interval)
+            alerts = dispatcher.post(data)
+            if alerts:
+                siren.warn(alerts)
+
+            logger.debug(f"Sleeping for {INTERVAL}s till next update...")
+            time.sleep(INTERVAL)
     except KeyboardInterrupt:
-        logger.debug("Exited after detecting keyboard interrupt!")
-
-
-def main():
-    """ method made for CLI usage """
-    parser = argparse.ArgumentParser(description="Run HAL")
-    parser.add_argument("path", type=Path, help="Path to the main logs folder")
-    parser.add_argument("interval", type=int, help="How often data will be updated (s)")
-    args = parser.parse_args()
-
-    run(args.path, args.interval)
+        logger.debug("Stopped HAL due to keyboard interrupt.")
 
 
 if __name__ == "__main__":
-    """ """
     main()

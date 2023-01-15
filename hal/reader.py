@@ -18,6 +18,7 @@ class Reader:
         self.path: Path = Path(path)
         self.params: tuple[Param] = params
         self.delimiter: str = ","
+        self._data: dict[Param, dict[str, str]] = self._read(last=False)
 
     @property
     def logspec(self) -> dict[Path, list[Param]]:
@@ -32,14 +33,10 @@ class Reader:
             logspec[filepath].append(param)
         return logspec
 
-    def read(self) -> dict[Param, dict[str, str]]:
+    def _read(self, last=True) -> dict[Param, dict[str, str]]:
         """
-        Read logfiles for all Params in config and return a data dictionary
-        Method is purposely written in a naive inefficient way to avoid reading inconsistently logged data
-        return dict with key = Param object, value = dict with key = timestamp string and value = param value string. number of entries in dictionary = param.nval and insertion order is reverse chronological. value is None if path to Param's logfile does not exist.
-        assume:
-            the second entry (index = 1) of each line in log file is the time stamp
-            the terminating character for each line is "/n" and delimiter is ","
+        Internal method to read logfiles. If last=True, data dictionary value contains only the last timestamp and value pair, if last=False, we read last 'param.nvals' in reverse chronological order for each Param.
+        return dict with same structure as read() and make same assumptions as read()
         """
         data = {param: {} for param in self.params}
         for path, params in self.logspec.items():
@@ -47,8 +44,29 @@ class Reader:
                 with path.open() as file:
                     tokens = [line.rstrip("\n").split(",") for line in file.readlines()]
                 keys = [param.key for param in params if param.key]
-                for param in params:  # read 'nvals' latest tokens for each param
-                    for token in tokens[-param.nvals:][::-1]:
-                        if all(key in token for key in keys): # ignore bad tokens
-                            data[param][token[1]] = token[param.pos]  # token[1] = time
+                for param in params:  # read 'nvals' or latest token(s) for each param
+                    nvals = 1 if last else param.nvals
+                    for token in tokens[-nvals:][::-1]:
+                        if all(key in token for key in keys):  # ignore bad tokens
+                            timestamp = f"{token[0]} {token[1]}"
+                            data[param][timestamp] = token[param.pos]
         return data
+
+    def read(self) -> dict[Param, dict[str, str]]:
+        """
+        Read logfiles for all Params and return a data dictionary containing 'param.nvals' latest timestamps and values for each Param
+        Method is purposely written in a naive inefficient way to avoid reading inconsistently logged data
+        return Data dictionary with key = Param, value = dict with key = timestamp string and value = Param value string. number of entries in dictionary = param.nval and insertion order is reverse chronological. Data dictionary value is empty if path to Param's logfile does not exist.
+        assume:
+            the 1st & 2nd entries of each line in log file consist of the time stamp
+            the terminating character for each line is "/n" and delimiter is ","
+        """
+        new_data = self._read()
+        for param, datadict in self._data.items():
+            num_entries = len(datadict)
+            datadict |= new_data[param]  # update data dict with new data
+            diff_entries = len(datadict) - num_entries
+            for _ in range(diff_entries):  # remove earliest elements
+                del datadict[next(iter(datadict))]
+        data = {param: datadict.copy() for param, datadict in self._data.items()}
+        return data  # don't return self._data, return copy instead

@@ -2,7 +2,7 @@
 
 import time
 
-from hal.config import PARAMS, INTERVAL, LOGFOLDER
+from hal.config import INTERVAL
 from hal.dispatcher import Dispatcher
 from hal.logger import logger
 from hal.reader import Reader
@@ -16,19 +16,16 @@ def main():
 
     Coordinates interaction between the reader, dispatcher, and the siren to read logfiles based on a user-specified config, post parameter values to Notion, and send alerts to a Slack channel.
     """
-    logger.debug("Starting HAL...")
-    reader = Reader(LOGFOLDER, *PARAMS)
-    dispatcher = Dispatcher()
-    siren = Siren()
+    logger.debug(f"Starting up HAL...")
+    reader, dispatcher, siren = Reader(), Dispatcher(), Siren()
 
     try:
         while True:
             logger.debug("Reading and posting data...")
             data = reader.read()
-            alerts = dispatcher.post(data)
+            alerts = dispatcher.dispatch(data)
             if alerts:
                 siren.warn(alerts)
-
             logger.debug(f"Sleeping for {INTERVAL}s till next update...")
             time.sleep(INTERVAL)
     except KeyboardInterrupt:

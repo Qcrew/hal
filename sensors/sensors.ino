@@ -30,21 +30,16 @@ int flow;
 int pressure_sensor_pin = 15;
 
 // raw air pressure sensor value
-int pressure_sensor_value;
+int pressure_sensor_analog_value;
 
-// factor for converting raw air pressure sensor value to voltage
-float pressure_sensor_volt;
-int adc_offset = 350;  // adc value when pressure sensor pin receives no input
-// 3.3V is the ESP32's analog pin reference voltage
-// 4095 refers to ESP32's ADC resolution of 12 bits
-float adc_to_volt = (3.3 / 4095);
-
-// factor for converting voltage to absolute pressure
-float rel_pres;
+// processed absolute pressure in bar
 float abs_pres_bar;
-int volt_to_rel_pres = 25;  // reciprocal of pressure sensor sensitivity of 40 mV/psi
-float atm_pres_psi = 14.6959;
-float psi_to_bar = 0.0689476;
+
+// factors for converting raw air pressure sensor value to absolute pressure in bar
+int adc_offset = 450;  // approx. adc value when pressure sensor pin receives atm pressure
+float adc_to_volt = (3.3 / 4095);  // 3.3V is the reference voltage and 4095 refers to ESP32's ADC resolution of 12 bits 
+int volt_to_psi = 25;  // reciprocal of pressure sensor sensitivity of 40 mV/psi
+float psi_to_bar = 0.0689476;  // conversion factor between psi and bar
 
 // time interval the pulse counts are sensed after and averaged over, in seconds
 // this also effectively determines the frequency at which data is logged by sensors.py
@@ -76,10 +71,8 @@ void loop ()
    {
       previous_time = current_time;
       flow = (pulse_count / (interval * pulse_frequency));
-      pressure_sensor_value = analogRead(pressure_sensor_pin);
-      pressure_sensor_volt = (pressure_sensor_value - adc_offset) * adc_to_volt;
-      rel_pres = pressure_sensor_volt * volt_to_rel_pres;
-      abs_pres_bar = (rel_pres + atm_pres_psi) * psi_to_bar;
+      pressure_sensor_analog_value = analogRead(pressure_sensor_pin);
+      abs_pres_bar = (pressure_sensor_analog_value - adc_offset) * adc_to_volt * volt_to_psi * psi_to_bar;
       Serial.print(flow);
       Serial.print(",");
       Serial.println(abs_pres_bar);

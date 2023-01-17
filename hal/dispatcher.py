@@ -32,7 +32,6 @@ class Dispatcher:
             elif latest_timestamp != last_updated_timestamp:
                 value = param.parse(values[latest_timestamp])
                 if not param.validate(value):  # sound an alarm
-                    print(f"SENDING ALARM FOR {param}, {value}")
                     siren.warn(param, value)
                 self._dispatch(param, value, latest_timestamp)
                 self._timestamps[param.name] = latest_timestamp

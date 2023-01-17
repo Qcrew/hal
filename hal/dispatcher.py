@@ -27,27 +27,27 @@ class Dispatcher:
         """
         alerts = {}
         for param, values in data.items():
-            last_updated_timestamp = self._timestamps[param]
+            last_updated_timestamp = self._timestamps[param.name]
             latest_timestamp = "" if not values else list(values)[-1]
             value = "N/A" if not values else param.parse(values[latest_timestamp])
             if latest_timestamp != last_updated_timestamp:
                 if not param.validate(value):  # sound an alarm
                     logger.info(f"Got alert for {param.name} {value = }")
                     alerts[param] = value
-                self._dispatch(param.name, value, latest_timestamp)
+                self._dispatch(param, value, latest_timestamp)
         return alerts
 
-    def _dispatch(self, name: str, value: str, timestamp: str) -> None:
+    def _dispatch(self, param: Param, value: str, timestamp: str) -> None:
         """
-        name (str) param name
+        name (Param) param object
         value (str) parsed value to post
         timestamp(str) timestamp associated with param value
         """
-        success = self._client.post(name, value)
+        success = self._client.post(param, value)
         if success:
-            logger.info(f"Posted {name} = {value} as of {timestamp}.")
+            logger.info(f"Posted {param.name} = {value} as of {timestamp}.")
         else:
-            logger.info(f"Error posting {name}={value}, retrying in {self._interval}s")
+            logger.info(f"Error posting {param.name} = {value}, retrying...")
             time.sleep(self._interval)
-            self._dispatch(name, value, timestamp)
+            self._dispatch(param, value, timestamp)
         time.sleep(Dispatcher.SLEEP_TIME)

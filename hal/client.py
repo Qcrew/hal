@@ -67,9 +67,9 @@ class Client:
             return False
         return True
 
-    def post(self, name: str, value: str) -> bool:
+    def post(self, param: Param, value: str) -> bool:
         """ """
-        page_id = self._page_map[name]
+        page_id = self._page_map[param]
         url = Client.BASE_URL + f"/pages/{page_id}"
         data = {"properties": {"Value": {"rich_text": [{"text": {"content": value}}]}}}
         response = requests.patch(url, json=data, headers=self._headers)

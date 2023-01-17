@@ -51,7 +51,7 @@ class BinParam(Param):
 
     def validate(self, value: str) -> bool:
         """ """
-        return int(float(value)) in (0, 1)
+        return value in ("True", "False")
 
 
 class NumParam(Param):

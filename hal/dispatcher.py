@@ -11,6 +11,8 @@ from hal.param import Param
 class Dispatcher:
     """ """
 
+    SLEEP_TIME: float = 1.2  # time to wait between two dispatch requests
+
     def __init__(self) -> None:
         """ """
         self._interval: int = INTERVAL
@@ -48,3 +50,4 @@ class Dispatcher:
             logger.info(f"Error posting {name}={value}, retrying in {self._interval}s")
             time.sleep(self._interval)
             self._dispatch(name, value, timestamp)
+        time.sleep(Dispatcher.SLEEP_TIME)

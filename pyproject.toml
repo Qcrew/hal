@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hal"
-version = "3.0.1"
+version = "3.0.2"
 description = "Monitor lab instruments in real-time with a Notion frontend"
 authors = ["qcrew <general.qcrew@gmail.com>"]
 license = "MIT"

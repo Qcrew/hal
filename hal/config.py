@@ -199,14 +199,14 @@ TURBO_POW = NumParam(
 )
 
 TURBO_EDU_OVER_TEMP = BinParam(
-    name="Is turbo EDU over temp",
+    name="Is EDU over temp",
     filename="Status_",
     pos="tc400ovtempelec",
     category="Pumps",
 )
 
 TURBO_PUMP_OVER_TEMP = BinParam(
-    name="Is turbo pump over temp",
+    name="Is pump over temp",
     filename="Status_",
     pos="tc400ovtemppum",
     category="Pumps",
@@ -283,7 +283,7 @@ PULSE_TUBE_ON = BinParam(
 )
 
 WATER_IN_TEMP = NumParam(
-    name="Input cooling water temp",
+    name="Input water temp",
     filename="Status_",
     pos="cpatempwi",
     category="Compressors",
@@ -293,7 +293,7 @@ WATER_IN_TEMP = NumParam(
 )
 
 WATER_OUT_TEMP = NumParam(
-    name="Output cooling water temp",
+    name="Output water temp",
     filename="Status_",
     pos="cpatempwo",
     category="Compressors",

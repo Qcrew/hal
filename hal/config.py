@@ -11,10 +11,10 @@ from hal.param import BinParam, Param, NumParam
 FRIDGE_NAME = "Iara"
 
 # path to the main logs folder
-LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
+LOGFOLDER = "C:/Users/Qcrew/Bluefors logs"
 
 # how often logged data will be read and posted by HAL
-INTERVAL = 40  # seconds
+INTERVAL = 30  # seconds
 
 # a txt file must be at this path and contain one value - HAL's Notion integration token
 NOTION_TOKENPATH = Path.cwd() / "notion_token.txt"

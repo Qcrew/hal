@@ -18,12 +18,12 @@ class Dispatcher:
         # for each param, save latest timestamp strings posted to Notion
         self._timestamps: dict[Param, str] = {param.name: "" for param in PARAMS}
 
-    def dispatch(self, data: dict[Param, dict[str, str]]) -> dict[Param, str]:
+    def dispatch(self, data: dict[Param, dict[str, str]], siren) -> dict[Param, str]:
         """
         data (dict) datadict as returned by the Reader
+        siren (Siren) to send warnings if any Params are out of bounds
         return dict of alerts with key = Param object and value = param value
         """
-        alerts = {}
         for param, values in data.items():
             last_updated_timestamp = self._timestamps[param.name]
             latest_timestamp = "N/A" if not values else list(values)[-1]
@@ -32,11 +32,10 @@ class Dispatcher:
             elif latest_timestamp != last_updated_timestamp:
                 value = param.parse(values[latest_timestamp])
                 if not param.validate(value):  # sound an alarm
-                    logger.info(f"Got alert for {param.name} {value = }")
-                    alerts[param] = value
+                    print(f"SENDING ALARM FOR {param}, {value}")
+                    siren.warn(param, value)
                 self._dispatch(param, value, latest_timestamp)
                 self._timestamps[param.name] = latest_timestamp
-        return alerts
 
     def _dispatch(self, param: Param, value: str, timestamp: str) -> None:
         """

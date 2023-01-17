@@ -30,7 +30,7 @@ SLACK_TOKENPATH = Path.cwd() / "slack_token.txt"
 # Parameter settings
 
 # dilution fridge flange temperatures
-
+"""
 MXC_FLANGE_TEMP = NumParam(
     name="MXC flange temp",
     filename="CH6 T ",
@@ -135,7 +135,7 @@ P6_SERVICE_PRES = NumParam(
     category="Pressures",
     units="mbar",
 )
-
+"""
 # pumps
 
 SCROLL1_ON = BinParam(
@@ -221,7 +221,7 @@ WATER_FLOW = NumParam(
     category="Flows",
     units="L/min",
     ndp=0,
-    bounds=(10, 30),
+    bounds=(10, 11),  # (10, 30)
 )
 
 HE_FLOW = NumParam(
@@ -355,9 +355,9 @@ AIR_PRES = NumParam(
     pos=3,
     category="Valves",
     units="bar",
-    bounds=(4, 8),
+    bounds=(3, 4),  # (4,8)
 )
-
+"""
 CTRL_PRES_OK = BinParam(
     name="Control pres ok", filename="Status_", pos="ctr_pressure_ok", category="Valves"
 )
@@ -407,6 +407,6 @@ V21_ON = BinParam(name="V21 on", filename="Channels ", pos="v21", category="Valv
 V22_ON = BinParam(name="V22 on", filename="Channels ", pos="v22", category="Valves")
 
 V23_ON = BinParam(name="V23 on", filename="Channels ", pos="v23", category="Valves")
-
+"""
 # a sequence of Params to be read from their log file
 PARAMS = [var for var in locals().values() if isinstance(var, Param)]

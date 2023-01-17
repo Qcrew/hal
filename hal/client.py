@@ -58,17 +58,17 @@ class Client:
             url = Client.BASE_URL + f"/pages/{page_id}"
             payload["properties"]["Parameter"]["title"][0]["text"]["content"] = name
             payload["properties"]["Category"]["multi_select"][0]["name"] = category
-            response = requests.patch(url, json=payload, headers=self._headers)
-            if self._errorcheck(response):  # TODO PROPER ERROR HANDLING
-                logger.info(f"Updated {name = } and {category = } at {page_id = }")
+            requests.patch(url, json=payload, headers=self._headers)
+            logger.info(f"Updated {name = } and {category = } at {page_id = }")
             time.sleep(DELAY)
 
     def _errorcheck(self, response: requests.Response) -> bool:
-        """ """
-        if response.json()["object"] == "error":  # TODO PROPER ERROR HANDLING
-            logger.error(response.json())
+        """ """  # TODO complete it
+        if response.status_code == 200:
+            return True
+        else:
+            logger.error(f"{response}: {response.text}")
             return False
-        return True
 
     def post(self, param: Param, value: str) -> bool:
         """ """

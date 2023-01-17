@@ -1,8 +1,10 @@
 """ Implements subset of Notion API specific to HAL'S functioning """
 
+import time
+
 import requests
 
-from hal.config import FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
+from hal.config import DELAY, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
 from hal.logger import logger
 from hal.param import Param
 
@@ -59,6 +61,7 @@ class Client:
             response = requests.patch(url, json=payload, headers=self._headers)
             if self._errorcheck(response):  # TODO PROPER ERROR HANDLING
                 logger.info(f"Updated {name = } and {category = } at {page_id = }")
+            time.sleep(DELAY)
 
     def _errorcheck(self, response: requests.Response) -> bool:
         """ """
@@ -67,9 +70,9 @@ class Client:
             return False
         return True
 
-    def post(self, name: str, value: str) -> bool:
+    def post(self, param: Param, value: str) -> bool:
         """ """
-        page_id = self._page_map[name]
+        page_id = self._page_map[param]
         url = Client.BASE_URL + f"/pages/{page_id}"
         data = {"properties": {"Value": {"rich_text": [{"text": {"content": value}}]}}}
         response = requests.patch(url, json=data, headers=self._headers)

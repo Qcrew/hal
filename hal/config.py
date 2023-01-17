@@ -8,13 +8,16 @@ from hal.param import BinParam, Param, NumParam
 # Runtime settings
 
 # name of the dilution fridge whose parameters are being monitored
-FRIDGE_NAME = ""
+FRIDGE_NAME = "Merlin"
 
 # path to the main logs folder
-LOGFOLDER = ""
+LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
 
-# how often logged data will be read and posted by HAL
-INTERVAL = 30  # seconds
+# sleep time between two successive read-post cycles
+INTERVAL = 1  # seconds
+
+# delay between successive Notion API calls
+DELAY = 0.1  # seconds
 
 # a txt file must be at this path and contain one value - HAL's Notion integration token
 NOTION_TOKENPATH = Path.cwd() / "notion_token.txt"
@@ -29,7 +32,7 @@ SLACK_TOKENPATH = Path.cwd() / "slack_token.txt"
 # dilution fridge flange temperatures
 
 MXC_FLANGE_TEMP = NumParam(
-    name="MXC flange",
+    name="MXC flange temp",
     filename="CH6 T ",
     pos=2,
     category="Temperatures",
@@ -38,7 +41,7 @@ MXC_FLANGE_TEMP = NumParam(
 )
 
 STILL_FLANGE_TEMP = NumParam(
-    name="Still flange",
+    name="Still flange temp",
     filename="CH5 T ",
     pos=2,
     category="Temperatures",
@@ -47,7 +50,7 @@ STILL_FLANGE_TEMP = NumParam(
 )
 
 FOURK_FLANGE_TEMP = NumParam(
-    name="4K flange",
+    name="4K flange temp",
     filename="CH2 T ",
     pos=2,
     category="Temperatures",
@@ -55,7 +58,7 @@ FOURK_FLANGE_TEMP = NumParam(
 )
 
 FIFTYK_FLANGE_TEMP = NumParam(
-    name="50K flange",
+    name="50K flange temp",
     filename="CH1 T ",
     pos=2,
     category="Temperatures",
@@ -213,7 +216,7 @@ TURBO_PUMP_OVER_TEMP = BinParam(
 
 WATER_FLOW = NumParam(
     name="Cooling water flow",
-    filename="ArduinoNano ",
+    filename="ESP32 ",
     pos=2,
     category="Flows",
     units="L/min",
@@ -222,7 +225,7 @@ WATER_FLOW = NumParam(
 )
 
 HE_FLOW = NumParam(
-    name="He flow",
+    name="Helium flow",
     filename="Flowmeter ",
     pos=2,
     category="Flows",
@@ -250,7 +253,7 @@ STILL_HEATER_ON = BinParam(
 )
 
 STILL_HEATER_POWER = NumParam(
-    name="Still heater",
+    name="Still heater power",
     filename="Heaters ",
     pos=5,
     category="Heaters",
@@ -260,11 +263,11 @@ STILL_HEATER_POWER = NumParam(
 )
 
 STILL_HEATSWITCH_ON = BinParam(
-    name="Still hs on", filename="Channels ", pos="hs-still", category="Heaters"
+    name="Still heatswitch on", filename="Channels ", pos="hs-still", category="Heaters"
 )
 
 MXC_HEATSWITCH_ON = BinParam(
-    name="MXC hs on", filename="Channels ", pos="hs-mc", category="Heaters"
+    name="MXC heatswitch on", filename="Channels ", pos="hs-mc", category="Heaters"
 )
 
 EXT_ON = BinParam(name="Ext on", filename="Channels ", pos="ext", category="Heaters")
@@ -280,7 +283,7 @@ PULSE_TUBE_ON = BinParam(
 )
 
 WATER_IN_TEMP = NumParam(
-    name="Input water temp",
+    name="Input cooling water temp",
     filename="Status_",
     pos="cpatempwi",
     category="Compressors",
@@ -290,7 +293,7 @@ WATER_IN_TEMP = NumParam(
 )
 
 WATER_OUT_TEMP = NumParam(
-    name="Output water temp",
+    name="Output cooling water temp",
     filename="Status_",
     pos="cpatempwo",
     category="Compressors",
@@ -309,7 +312,7 @@ OIL_TEMP = NumParam(
 )
 
 HELIUM_TEMP = NumParam(
-    name="He temp",
+    name="Helium temp",
     filename="Status_",
     pos="cpatemph",
     category="Compressors",
@@ -318,7 +321,7 @@ HELIUM_TEMP = NumParam(
 )
 
 AVG_LOW_PRES = NumParam(
-    name="He low pres avg",
+    name="Helium low pres avg",
     filename="Status_",
     pos="cpalpa",
     category="Compressors",
@@ -327,7 +330,7 @@ AVG_LOW_PRES = NumParam(
 )
 
 HELIUM_HIGH_PRES = NumParam(
-    name="He high pres avg",
+    name="Helium high pres avg",
     filename="Status_",
     pos="cpahpa",
     category="Compressors",
@@ -336,7 +339,7 @@ HELIUM_HIGH_PRES = NumParam(
 )
 
 COMP_CURRENT = NumParam(
-    name="Comp current",
+    name="Compressor current",
     filename="Status_",
     pos="cpacurrent",
     category="Compressors",
@@ -347,8 +350,8 @@ COMP_CURRENT = NumParam(
 # valves
 
 AIR_PRES = NumParam(
-    name="Comp air pres",
-    filename="ArduinoNano ",
+    name="Compressed air pres",
+    filename="ESP32 ",
     pos=3,
     category="Valves",
     units="bar",
@@ -356,7 +359,7 @@ AIR_PRES = NumParam(
 )
 
 CTRL_PRES_OK = BinParam(
-    name="Ctrl pres ok", filename="Status_", pos="ctr_pressure_ok", category="Valves"
+    name="Control pres ok", filename="Status_", pos="ctr_pressure_ok", category="Valves"
 )
 
 V1_ON = BinParam(name="V1 on", filename="Channels ", pos="v1", category="Valves")

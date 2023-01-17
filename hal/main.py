@@ -8,7 +8,7 @@ from hal.logger import logger
 from hal.reader import Reader
 from hal.siren import Siren
 
-
+import pprint
 @logger.catch
 def main():
     """
@@ -23,9 +23,7 @@ def main():
         while True:
             logger.debug("Reading and posting data...")
             data = reader.read()
-            alerts = dispatcher.dispatch(data)
-            if alerts:
-                siren.warn(alerts)
+            dispatcher.dispatch(data, siren)
             logger.debug(f"Sleeping for {INTERVAL}s till next update...")
             time.sleep(INTERVAL)
     except KeyboardInterrupt:

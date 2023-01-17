@@ -25,18 +25,17 @@ class Siren:
         self._log: dict[Param, float] = {}  # to record previous alert timestamp
         logger.info(f"Siren ready to send alerts to Slack channel {self._channel_id}.")
 
-    def warn(self, alerts: dict[Param, str]) -> None:
+    def warn(self, param: Param, value: str) -> None:
         """ """
-        for param, value in alerts.items():
-            timestamp = self._log[param] if param in self._log else time.time()
-            text = f"{FRIDGE_NAME} {param.name} {value = } out of bounds {param.bounds}"
-            channel = self._channel_id
-            # post only if more than self.remind_time has passed since last message
-            if int(time.time() - timestamp) > self._remind_time:
-                result = self._client.chat_postMessage(channel=channel, text=text)
-                if result.get("ok"):  # ensure no error response received
-                    self._log[param] = time.time()  # save for later check
-                    logger.info(f"Posted '{text = }' to slack!")
-                else:
-                    errorstring = result.get("error")
-                    logger.debug(f"Didn't post '{text = }' due to {errorstring = }.")
+        timestamp = self._log[param] if param in self._log else 0
+        text = f"{FRIDGE_NAME} {param.name} {value = } out of bounds {param.bounds}"
+        channel = self._channel_id
+        # post only if more than self.remind_time has passed since last message
+        if int(time.time() - timestamp) > self._remind_time:
+            result = self._client.chat_postMessage(channel=channel, text=text)
+            if result.get("ok"):  # ensure no error response received
+                self._log[param] = time.time()  # save for later check
+                logger.info(f"Posted '{text = }' to slack!")
+            else:
+                errorstring = result.get("error")
+                logger.debug(f"Didn't post '{text = }' due to {errorstring = }.")

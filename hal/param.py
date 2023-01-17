@@ -47,11 +47,11 @@ class BinParam(Param):
 
     def parse(self, value: str) -> str:
         """ """
-        return str(bool(value))
+        return str(bool(float(value)))
 
     def validate(self, value: str) -> bool:
         """ """
-        return int(float(value)) in (0, 1)
+        return value in ("True", "False")
 
 
 class NumParam(Param):

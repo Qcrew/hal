@@ -5,100 +5,72 @@ from datetime import datetime
 from pathlib import Path
 import time
 
-import numpy as np
-
-from hal.logger import logger
+from hal.config import LOGFOLDER, PARAMS
 from hal.param import Param
 
 
-class LogReader:
-    """reads a list of params from their log file"""
+class Reader:
+    """ """
 
-    def __init__(self, path: Path, *params: Param, split: str = ",") -> None:
-        """
-        path (Path) path to the main logs folder
-        params (Param) a sequence of Params to be read from their log file
-        split: (str) string used to split the entries in each line of the log file
-        """
-        self.path = path
-        self.params = params
-        self.split = split
-        self._date = self.date
-        self._logfiles = self.logfiles
-        logger.debug(f"Ready to read {len(params)} params from {path = }.")
-
-    @property
-    def date(self) -> str:
-        """return current date string in yy:mm:dd format"""
-        return datetime.now().strftime("%y-%m-%d")
-
-    @property
-    def logfiles(self) -> dict[Path, list[Param]]:
-        """return dict of logfile Paths mapped to a list of Params logged in them"""
-        logfiles = defaultdict(list)
-        filepaths = {param: self.locate(param) for param in self.params}
-        for param, filepath in filepaths.items():
-            logfiles[filepath].append(param)
-        return logfiles
-
-    def locate(self, param: Param) -> Path:
-        """
-        param (Param) the param to locate, based on its 'filename' attribute
-        return Path to log file generated based on Bluefors' log file naming convention
-        """
-        date = self.date
-        return self.path / f"{date}/{param.filename}{date}.log"
-
-    def _check_logfile_rotation(self) -> None:
+    def __init__(self) -> None:
         """ """
-        date = self.date  # get current date
-        if date != self._date:  # account for Bluefors' log rotation
-            self._logfiles = self.logfiles
-            self._date = date
-            logger.debug("Rotated log files!")
+        self._path: Path = Path(LOGFOLDER)
+        self._params: tuple[Param] = PARAMS
+        self._data: dict[Param, dict[str, str]] = self._read(last=False)
 
-    def read(self) -> dict[Param, tuple[np.ndarray, np.ndarray]]:
+    @property
+    def logspec(self) -> dict[Path, list[Param]]:
+        """return dict of logfile Paths mapped to a list of Params logged in them"""
+        # get current date in yy-mm-dd format e.g. 23-01-12
+        date = datetime.now().strftime("%y-%m-%d")
+        # get dict with key = Param and value = logfile Path
+        paths = {p: self._path / f"{date}/{p.filename}{date}.log" for p in self._params}
+        # return dict with key = logfile Path and value = list[Param]
+        logspec = defaultdict(list)
+        for param, filepath in paths.items():
+            logspec[filepath].append(param)
+        return logspec
+
+    def _read(self, last=True) -> dict[Param, dict[str, str]]:
         """
-        return dict[str, tuple[np.ndarray, np.ndarray]] with key = Param object and value = two 1D np arrays of strings, first array contains timestamps in mm-dd hh:mm format, second array contains raw param string values. length of each array equals the param's 'nvals' attribute. value is (None, None) if path doesn't exist.
-        assume col = 1 is for timestamp
+        Internal method to read logfiles. If last=True, data dictionary value contains only the last timestamp and value pair, if last=False, we read last 'param.nvals' in reverse chronological order for each Param.
+        return dict with same structure as read() and make same assumptions as read()
         """
-        self._check_logfile_rotation()  # ensure correct logfiles are being read from
-
-        data = {}
-        for path, params in self._logfiles.items():
-            if not path.exists():
-                for param in params:
-                    data[param] = (None, None)
-            else:
-                cols = (1, *(p.pos for p in params))  # col=1 is for timestamp
-                txt = self.loadtxt(path, cols)
-
-                for idx, param in enumerate(params, start=1):
-                    timestamps = txt[0][-param.nvals :]
-                    values = txt[idx][-param.nvals :]
-                    data[param] = (timestamps, values)
-
+        data = {param: {} for param in self._params}
+        for path, params in self.logspec.items():
+            if path.exists():  # empty data dict if path does not exist
+                with path.open() as file:
+                    tokens = [line.rstrip("\n").split(",") for line in file.readlines()]
+                for param in params:  # read 'nvals' or latest token(s) for each param
+                    nvals = 1 if last else param.nvals
+                    for token in tokens[-nvals:][::-1]:
+                        timestamp = f"{token[0]} {token[1]}"
+                        if isinstance(param.pos, int):  # pos = col index
+                            data[param][timestamp] = token[param.pos]
+                        elif isinstance(param.pos, str):  # pos = keyword adjacent
+                            try:
+                                idx = token.index(param.pos)
+                            except ValueError:  # keyword not present in token = bad log
+                                pass  # ignore bad log
+                            else:  # assume value is right next to position keyword
+                                data[param][timestamp] = token[idx + 1]
         return data
 
-    def loadtxt(self, path, cols, wait=10) -> np.ndarray:
-        """re-implementation of numpy's loadtxt method customised for LogReader"""
-        try:
-            txt = np.loadtxt(path, dtype=str, delimiter=self.split, usecols=cols).T
-        except IndexError:  # when Bluefors log format is inconsistent
-            logger.debug(f"Bad log format, removing last line of {path}...")
-            time.sleep(wait)
-            remove_last_line(path)
-            time.sleep(wait)
-            self.loadtxt(path, cols)  # recursive call to handle multiple bad log lines
-        else:
-            return txt
-
-
-def remove_last_line(path) -> None:
-    """Remove the last line of the file at the given path"""
-    with open(path, "r+") as logfile:
-        curr_pos = prev_pos = logfile.tell()
-        while logfile.readline():
-            prev_pos = curr_pos
-            curr_pos = logfile.tell()
-        logfile.truncate(prev_pos)
+    def read(self) -> dict[Param, dict[str, str]]:
+        """
+        Read logfiles for all Params and return a data dictionary containing 'param.nvals' latest timestamps and values for each Param
+        Method is purposely written in a naive inefficient way to avoid reading inconsistently logged data
+        return Data dictionary with key = Param, value = dict with key = timestamp string and value = Param value string. number of entries in dictionary = param.nval and insertion order is reverse chronological. Data dictionary value is empty if path to Param's logfile does not exist.
+        assume:
+            the 1st & 2nd entries of each line in log file consist of the time stamp
+            the terminating character for each line is "/n" and delimiter is ","
+        """
+        new_data = self._read()
+        for param, datadict in self._data.items():
+            num_entries = len(datadict)
+            datadict |= new_data[param]  # update data dict with new data
+            diff_entries = len(datadict) - num_entries
+            for _ in range(diff_entries):  # remove earliest elements
+                del datadict[next(iter(datadict))]
+        data = {param: datadict.copy() for param, datadict in self._data.items()}
+        return data  # don't return self._data, return copy instead

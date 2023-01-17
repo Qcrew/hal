@@ -1,4 +1,4 @@
-""" log hal's activity """
+""" Module to log HAL's activity """
 
 from pathlib import Path
 

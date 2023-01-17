@@ -14,7 +14,7 @@ FRIDGE_NAME = "Merlin"
 LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
 
 # sleep time between two successive read-post cycles
-INTERVAL = 1  # seconds
+INTERVAL = 5  # seconds
 
 # delay between successive Notion API calls
 DELAY = 0.1  # seconds

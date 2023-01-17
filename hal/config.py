@@ -8,13 +8,13 @@ from hal.param import BinParam, Param, NumParam
 # Runtime settings
 
 # name of the dilution fridge whose parameters are being monitored
-FRIDGE_NAME = "Merlin"
+FRIDGE_NAME = "Iara"
 
 # path to the main logs folder
-LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
+LOGFOLDER = "C:/Users/Qcrew/Bluefors logs"
 
 # sleep time between two successive read-post cycles
-INTERVAL = 1  # seconds
+INTERVAL = 5  # seconds
 
 # delay between successive Notion API calls
 DELAY = 0.1  # seconds
@@ -199,14 +199,14 @@ TURBO_POW = NumParam(
 )
 
 TURBO_EDU_OVER_TEMP = BinParam(
-    name="Is turbo EDU over temp",
+    name="Is EDU over temp",
     filename="Status_",
     pos="tc400ovtempelec",
     category="Pumps",
 )
 
 TURBO_PUMP_OVER_TEMP = BinParam(
-    name="Is turbo pump over temp",
+    name="Is pump over temp",
     filename="Status_",
     pos="tc400ovtemppum",
     category="Pumps",
@@ -216,7 +216,7 @@ TURBO_PUMP_OVER_TEMP = BinParam(
 
 WATER_FLOW = NumParam(
     name="Cooling water flow",
-    filename="ESP32 ",
+    filename="ArduinoNano ",
     pos=2,
     category="Flows",
     units="L/min",
@@ -283,7 +283,7 @@ PULSE_TUBE_ON = BinParam(
 )
 
 WATER_IN_TEMP = NumParam(
-    name="Input cooling water temp",
+    name="Input water temp",
     filename="Status_",
     pos="cpatempwi",
     category="Compressors",
@@ -293,7 +293,7 @@ WATER_IN_TEMP = NumParam(
 )
 
 WATER_OUT_TEMP = NumParam(
-    name="Output cooling water temp",
+    name="Output water temp",
     filename="Status_",
     pos="cpatempwo",
     category="Compressors",
@@ -351,7 +351,7 @@ COMP_CURRENT = NumParam(
 
 AIR_PRES = NumParam(
     name="Compressed air pres",
-    filename="ESP32 ",
+    filename="ArduinoNano ",
     pos=3,
     category="Valves",
     units="bar",

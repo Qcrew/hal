@@ -47,7 +47,7 @@ class BinParam(Param):
 
     def parse(self, value: str) -> str:
         """ """
-        return str(bool(value))
+        return str(bool(float(value)))
 
     def validate(self, value: str) -> bool:
         """ """

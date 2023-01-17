@@ -40,7 +40,7 @@ float psi_to_bar = 0.0689476;  // conversion factor between psi and bar
 
 // time interval the pulse counts are sensed after and averaged over, in seconds
 // this also effectively determines the frequency at which data is logged by sensors.py
-const int interval = 60;
+const int interval = 30;  // set to 30 due to weird timeout issues with 60 while reading board data
 // variables to track the time window for flow sensing
 unsigned long current_time;
 unsigned long previous_time;

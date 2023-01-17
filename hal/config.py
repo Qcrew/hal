@@ -8,10 +8,10 @@ from hal.param import BinParam, Param, NumParam
 # Runtime settings
 
 # name of the dilution fridge whose parameters are being monitored
-FRIDGE_NAME = "Iara"
+FRIDGE_NAME = ""
 
 # path to the main logs folder
-LOGFOLDER = "C:/Users/Qcrew/Bluefors logs"
+LOGFOLDER = ""
 
 # how often logged data will be read and posted by HAL
 INTERVAL = 30  # seconds

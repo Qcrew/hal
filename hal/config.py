@@ -14,10 +14,10 @@ FRIDGE_NAME = "Merlin"
 LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
 
 # sleep time between two successive read-post cycles
-INTERVAL = 10  # seconds
+INTERVAL = 1  # seconds
 
 # delay between successive Notion API calls
-DELAY = 1  # seconds
+DELAY = 0.1  # seconds
 
 # a txt file must be at this path and contain one value - HAL's Notion integration token
 NOTION_TOKENPATH = Path.cwd() / "notion_token.txt"

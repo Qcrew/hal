@@ -13,8 +13,11 @@ FRIDGE_NAME = "Merlin"
 # path to the main logs folder
 LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
 
-# how often logged data will be read and posted by HAL
-INTERVAL = 30  # seconds
+# sleep time between two successive read-post cycles
+INTERVAL = 10  # seconds
+
+# delay between successive Notion API calls
+DELAY = 1  # seconds
 
 # a txt file must be at this path and contain one value - HAL's Notion integration token
 NOTION_TOKENPATH = Path.cwd() / "notion_token.txt"

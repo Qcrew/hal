@@ -3,15 +3,13 @@
 import time
 
 from hal.client import Client
-from hal.config import INTERVAL, PARAMS
+from hal.config import INTERVAL, DELAY, PARAMS
 from hal.logger import logger
 from hal.param import Param
 
 
 class Dispatcher:
     """ """
-
-    SLEEP_TIME: int = 1  # time to wait between two dispatch requests
 
     def __init__(self) -> None:
         """ """
@@ -53,4 +51,4 @@ class Dispatcher:
             logger.info(f"Error posting {param.name} = {value}, retrying...")
             time.sleep(self._interval)
             self._dispatch(param, value, timestamp)
-        time.sleep(Dispatcher.SLEEP_TIME)
+        time.sleep(DELAY)

@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from hal.config import FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
+from hal.config import DELAY, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
 from hal.logger import logger
 from hal.param import Param
 
@@ -13,7 +13,6 @@ class Client:
     """ """
 
     BASE_URL: str = "https://api.notion.com/v1"
-    SLEEP_TIME: int = 1  # time to wait between two dispatch requests
 
     def __init__(
         self,
@@ -62,7 +61,7 @@ class Client:
             response = requests.patch(url, json=payload, headers=self._headers)
             if self._errorcheck(response):  # TODO PROPER ERROR HANDLING
                 logger.info(f"Updated {name = } and {category = } at {page_id = }")
-            time.sleep(Client.SLEEP_TIME)
+            time.sleep(DELAY)
 
     def _errorcheck(self, response: requests.Response) -> bool:
         """ """

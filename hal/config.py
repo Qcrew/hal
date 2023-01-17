@@ -8,10 +8,10 @@ from hal.param import BinParam, Param, NumParam
 # Runtime settings
 
 # name of the dilution fridge whose parameters are being monitored
-FRIDGE_NAME = ""
+FRIDGE_NAME = "Merlin"
 
 # path to the main logs folder
-LOGFOLDER = ""
+LOGFOLDER = "C:/Users/Qcrew4/Bluefors logs"
 
 # how often logged data will be read and posted by HAL
 INTERVAL = 30  # seconds
@@ -213,7 +213,7 @@ TURBO_PUMP_OVER_TEMP = BinParam(
 
 WATER_FLOW = NumParam(
     name="Cooling water flow",
-    filename="ArduinoNano ",
+    filename="ESP32 ",
     pos=2,
     category="Flows",
     units="L/min",
@@ -348,7 +348,7 @@ COMP_CURRENT = NumParam(
 
 AIR_PRES = NumParam(
     name="Comp air pres",
-    filename="ArduinoNano ",
+    filename="ESP32 ",
     pos=3,
     category="Valves",
     units="bar",

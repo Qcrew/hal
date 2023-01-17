@@ -11,7 +11,7 @@ from hal.param import Param
 class Dispatcher:
     """ """
 
-    SLEEP_TIME: float = 1.2  # time to wait between two dispatch requests
+    SLEEP_TIME: int = 1  # time to wait between two dispatch requests
 
     def __init__(self) -> None:
         """ """
@@ -28,13 +28,16 @@ class Dispatcher:
         alerts = {}
         for param, values in data.items():
             last_updated_timestamp = self._timestamps[param.name]
-            latest_timestamp = "" if not values else list(values)[-1]
-            value = "N/A" if not values else param.parse(values[latest_timestamp])
-            if latest_timestamp != last_updated_timestamp:
+            latest_timestamp = "N/A" if not values else list(values)[-1]
+            if latest_timestamp == "N/A":
+                self._dispatch(param, "N/A", latest_timestamp)
+            elif latest_timestamp != last_updated_timestamp:
+                value = param.parse(values[latest_timestamp])
                 if not param.validate(value):  # sound an alarm
                     logger.info(f"Got alert for {param.name} {value = }")
                     alerts[param] = value
                 self._dispatch(param, value, latest_timestamp)
+                self._timestamps[param.name] = latest_timestamp
         return alerts
 
     def _dispatch(self, param: Param, value: str, timestamp: str) -> None:

@@ -27,9 +27,9 @@ class Siren:
 
     def warn(self, param: Param, value: str) -> None:
         """ """
-        timestamp = self._log[param] if param in self._log else time.time()
+        timestamp = self._log[param] if param in self._log else 0
         print(f"{timestamp = }")
-        text = f"[TEST ALERT] {FRIDGE_NAME} {param.name} {value = } out of bounds {param.bounds}"
+        text = f"{FRIDGE_NAME} {param.name} {value = } out of bounds {param.bounds}"
         channel = self._channel_id
         # post only if more than self.remind_time has passed since last message
         if int(time.time() - timestamp) > self._remind_time:

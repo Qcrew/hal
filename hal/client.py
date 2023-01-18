@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from hal.config import DELAY, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
+from hal.config import DELAY, INTERVAL, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
 from hal.logger import logger
 from hal.param import Param
 
@@ -75,5 +75,11 @@ class Client:
         page_id = self._page_map[param]
         url = Client.BASE_URL + f"/pages/{page_id}"
         data = {"properties": {"Value": {"rich_text": [{"text": {"content": value}}]}}}
-        response = requests.patch(url, json=data, headers=self._headers)
-        return self._errorcheck(response)
+        try:
+            response = requests.patch(url, json=data, headers=self._headers)
+        except requests.exceptions.ChunkedEncodingError as err:
+            logger.error(f"Got {err = }, retrying in {INTERVAL}s...")
+            time.sleep(INTERVAL)
+            self.post(param, value)
+        else:
+            return self._errorcheck(response)

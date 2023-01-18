@@ -77,7 +77,10 @@ class Client:
         data = {"properties": {"Value": {"rich_text": [{"text": {"content": value}}]}}}
         try:
             response = requests.patch(url, json=data, headers=self._headers)
-        except requests.exceptions.ChunkedEncodingError as err:
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+        ) as err:
             logger.error(f"Got {err = }, retrying in {INTERVAL}s...")
             time.sleep(INTERVAL)
             self.post(param, value)

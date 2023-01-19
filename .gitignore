@@ -58,4 +58,4 @@ slack_token.txt
 *.bat
 
 # HAL config
-config.py
+hal/config.py

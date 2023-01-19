@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from hal.config import DELAY, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
+from hal.config import DELAY, INTERVAL, FRIDGE_NAME, NOTION_TOKENPATH, PARAMS
 from hal.logger import logger
 from hal.param import Param
 
@@ -58,22 +58,31 @@ class Client:
             url = Client.BASE_URL + f"/pages/{page_id}"
             payload["properties"]["Parameter"]["title"][0]["text"]["content"] = name
             payload["properties"]["Category"]["multi_select"][0]["name"] = category
-            response = requests.patch(url, json=payload, headers=self._headers)
-            if self._errorcheck(response):  # TODO PROPER ERROR HANDLING
-                logger.info(f"Updated {name = } and {category = } at {page_id = }")
+            requests.patch(url, json=payload, headers=self._headers)
+            logger.info(f"Updated {name = } and {category = } at {page_id = }")
             time.sleep(DELAY)
 
     def _errorcheck(self, response: requests.Response) -> bool:
-        """ """
-        if response.json()["object"] == "error":  # TODO PROPER ERROR HANDLING
-            logger.error(response.json())
+        """ """  # TODO complete it
+        if response.status_code == 200:
+            return True
+        else:
+            logger.error(f"{response}: {response.text}")
             return False
-        return True
 
     def post(self, param: Param, value: str) -> bool:
         """ """
         page_id = self._page_map[param]
         url = Client.BASE_URL + f"/pages/{page_id}"
         data = {"properties": {"Value": {"rich_text": [{"text": {"content": value}}]}}}
-        response = requests.patch(url, json=data, headers=self._headers)
-        return self._errorcheck(response)
+        try:
+            response = requests.patch(url, json=data, headers=self._headers)
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+        ) as err:
+            logger.error(f"Got {err = }, retrying in {INTERVAL}s...")
+            time.sleep(INTERVAL)
+            self.post(param, value)
+        else:
+            return self._errorcheck(response)

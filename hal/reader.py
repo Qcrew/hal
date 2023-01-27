@@ -70,7 +70,8 @@ class Reader:
             num_entries = len(datadict)
             datadict |= new_data[param]  # update data dict with new data
             diff_entries = len(datadict) - num_entries
-            for _ in range(diff_entries):  # remove earliest elements
-                del datadict[next(iter(datadict))]
+            if num_entries:  # don't remove elements if datadict is initially empty
+                for _ in range(diff_entries):  # remove earliest elements
+                    del datadict[next(iter(datadict))]
         data = {param: datadict.copy() for param, datadict in self._data.items()}
         return data  # don't return self._data, return copy instead

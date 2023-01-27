@@ -9,6 +9,8 @@ from hal.reader import Reader
 from hal.siren import Siren
 
 import pprint
+
+
 @logger.catch
 def main():
     """
@@ -17,7 +19,9 @@ def main():
     Coordinates interaction between the reader, dispatcher, and the siren to read logfiles based on a user-specified config, post parameter values to Notion, and send alerts to a Slack channel.
     """
     logger.debug(f"Starting up HAL...")
-    reader, dispatcher, siren = Reader(), Dispatcher(), Siren()
+    reader = Reader()
+    dispatcher = Dispatcher()
+    siren = Siren()
 
     try:
         while True:

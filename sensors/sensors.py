@@ -1,5 +1,5 @@
 """
-Script to read sensor data from the ESP32 board and save it to a log file on disk. Currently, we are sensing cooling water flow and compressed air pressure.
+Script to read sensor data from the Arduino Nano board and save it to a log file on disk. Currently, we are sensing cooling water flow and compressed air pressure.
 This script is meant to be always running in the background.
 Logformat: <dd-mm-yy>,<hh-mm-ss>,<water flow in L/min>,<compressed air pressure in bar>
 """
@@ -7,19 +7,18 @@ Logformat: <dd-mm-yy>,<hh-mm-ss>,<water flow in L/min>,<compressed air pressure 
 from datetime import datetime
 from pathlib import Path
 import time
-from tkinter import E
 
 from loguru import logger
 import serial
 
-PORT = "COM5"  # serial port to be read
+PORT = "COM4"  # serial port to be read
 BAUDRATE = 9600
 TIMEOUT = 90
 RETRY = 60
 
 # log file will be saved to LOGPATH / {yy-mm-dd} / {FILEPREFIX}{yy-mm-dd}.log
-LOGPATH = Path("C:/Users/Qcrew4/Bluefors logs")
-FILEPREFIX = "ESP32 "
+LOGPATH = Path("C:/Users/Qcrew/Bluefors logs")
+FILEPREFIX = "ArduinoNano "
 
 
 @logger.catch

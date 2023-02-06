@@ -2,7 +2,7 @@
 Board: Arduino Nano
 HAL cooling water flow and compressed air pressure sensing
 Water flow sensor DIGITEN G1/2" CF-B7, F = 11Q (L/min)
-Pinout: 3V3 (blue), GND (brown), 3 (orange) 
+Pinout: 3.3V (red), GND (black), 3 (yellow) 
 Pressure sensor HONEYWELL 40PC150G (max 150 psi)
 Supply voltage 4.75-5.25V
 Output 0.5-4.5V (26.6mV/psi)(0.5V at 1 atm = 14.7 psi)
